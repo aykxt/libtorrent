@@ -4104,11 +4104,8 @@ namespace {
 		{
 			// if there was an enoent or eof error the block hashes array may be incomplete
 			// bail if we've hit the end of the valid hashes
-			if (block_hashes[i].is_all_zeros())
-			{
-				ret = false;
-				break;
-			}
+			if (block_hashes[i].is_all_zeros()) return false;
+
 			auto const result = get_hash_picker().set_block_hash(piece
 				, i * default_block_size, block_hashes[i]);
 
@@ -4120,8 +4117,11 @@ namespace {
 				// all verified ranges should always be full pieces or less
 				TORRENT_ASSERT(result.first_verified_block >= 0
 					|| (result.first_verified_block % blocks_per_piece) == 0);
-				TORRENT_ASSERT(result.num_verified <= blocks_in_piece
+				TORRENT_ASSERT(result.num_verified <= blocks_per_piece
 					|| (result.num_verified % blocks_per_piece) == 0);
+
+				// note that result.num_verified may cover pad blocks too, and
+				// so may be > blocks_in_piece
 
 				// sometimes, completing a single block may "unlock" validating
 				// multiple pieces. e.g. if we don't have the piece layer yet,
@@ -4133,7 +4133,7 @@ namespace {
 				// the block_passed array. For that tracking we need to clamp
 				// the start index to 0.
 				auto const first_block = std::max(0, result.first_verified_block);
-				auto const count = std::min(blocks_in_piece - first_block, result.num_verified);
+				auto const count = std::min(blocks_per_piece - first_block, result.num_verified);
 				std::fill_n(block_passed.begin() + first_block, count, true);
 
 				// the current block (i) should be part of the range that was
