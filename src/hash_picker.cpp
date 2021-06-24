@@ -537,6 +537,8 @@ bool validate_hash_request(hash_request const& hr, file_storage const& fs)
 #if TORRENT_USE_INVARIANT_CHECKS
 	void hash_picker::check_invariant(file_index_t const idx) const
 	{
+		TORRENT_UNUSED(idx);
+#ifdef TORRENT_EXPENSIVE_INVARIANT_CHECKS
 		auto const& verified = m_hash_verified[idx];
 		if (verified.empty()) return;
 
@@ -551,6 +553,7 @@ bool validate_hash_request(hash_request const& hr, file_storage const& fs)
 			TORRENT_ASSERT(!v || merkle_tree.has_node(block_index));
 			++block_index;
 		}
+#endif
 	}
 #endif
 }
