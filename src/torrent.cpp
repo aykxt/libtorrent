@@ -4133,7 +4133,7 @@ namespace {
 				// the block_passed array. For that tracking we need to clamp
 				// the start index to 0.
 				auto const first_block = std::max(0, result.first_verified_block);
-				auto const count = std::min(blocks_per_piece - first_block, result.num_verified);
+				auto const count = std::min(blocks_in_piece - first_block, result.num_verified);
 				std::fill_n(block_passed.begin() + first_block, count, true);
 
 				// the current block (i) should be part of the range that was
