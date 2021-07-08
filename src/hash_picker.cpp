@@ -109,16 +109,16 @@ bool validate_hash_request(hash_request const& hr, file_storage const& fs)
 			if (m_files.pad_file_at(f)) continue;
 
 			auto const& tree = m_merkle_trees[f];
-			auto& verified = m_hash_verified[f];
+			auto& v = m_hash_verified[f];
 
 			// TODO: allocate m_hash_verified lazily when a hash conflist occurs?
 			// would save memory in the common case of no hash failures
-			verified.resize(std::size_t(m_files.file_num_blocks(f)), all_verified);
-			if (verified.size() == 1)
+			v.resize(std::size_t(m_files.file_num_blocks(f)), all_verified);
+			if (v.size() == 1)
 			{
 				// the root hash comes from the metadata so it is always verified
 				TORRENT_ASSERT(!tree.root().is_all_zeros());
-				verified[0] = true;
+				v[0] = true;
 			}
 
 			if (m_files.file_size(f) <= m_files.piece_length())
@@ -146,7 +146,7 @@ bool validate_hash_request(hash_request const& hr, file_storage const& fs)
 						m_piece_hash_requested[f][i].have = true;
 						break;
 					}
-					if ((m_files.piece_length() == default_block_size && !verified[std::size_t(j)])
+					if ((m_files.piece_length() == default_block_size && !v[std::size_t(j)])
 						|| (m_files.piece_length() > default_block_size
 							&& !tree.has_node(piece_layer_start + j)))
 						break;
@@ -156,7 +156,7 @@ bool validate_hash_request(hash_request const& hr, file_storage const& fs)
 			// The verified bitfield may be invalid. If so, correct it to
 			// maintain the invariant of this class
 			int block_index = m_files.file_first_block_node(f);
-			for (auto i = verified.begin(); i != verified.end(); ++i)
+			for (auto i = v.begin(); i != v.end(); ++i)
 			{
 				if (*i && !tree.has_node(block_index))
 					*i = false;
